@@ -1,6 +1,6 @@
 /* A program which is intended to examine the application of numerical 
 solutions to partial differencial equations using the linear advection problem
-* using the explicit and implicit upwind, Lax-Wendroff, and Ritchmyer multi-step methods
+using the explicit and implicit upwind, Lax-Wendroff, and Ritchmyer multi-step methods
 using two sets of initial/boundary conditions */
 #include <iostream>
 #include <vector>
@@ -78,6 +78,7 @@ void boundary2(vector<double>& r, double N) {
 	r[N-1] = 0;
 }
 
+// Placing norms.cpp functions so they can be called in main.cpp
 void set1_norms(vector<double>& veupwind1, vector<double>& viupwind1, vector<double>& vlax1, vector<double>& vricht1, vector<double>& vanalytical1, double N);
 void set2_norms(vector<double>& veupwind2, vector<double>& viupwind2, vector<double>& vlax2, vector<double>& vricht2, vector<double>& vanalytical2, double N);
 
@@ -116,32 +117,40 @@ int main() {
 	double analytical_solution2;
 	double error1;
 	double error2;
+	// std is used because program also outputs to files. This avoids confusion
 	std::cout << "***********************" << endl << "Explicit Solutions" << endl << "***********************" << endl;
 
 	//Time step loop
 	for (double t = 0; t < max_t; t += dt) {
 		// Spacial step loop
 		for (double i = 0; i < N; i++) {
+			// calculates the value x
 			x = min_x + (max_x - min_x) * (i / (N - 1));
+			// Places x values into a vector for later use 
 			x_values.push_back(x);
+			// Calculate and store both analytical solutions at the current position
 			analytical_solution1 = analytical_1(x, t);
 			analytical_solution2 = analytical_2(x, t);
+			// Calculate the value of dx to be able to begin incrementing
 			if (i == 1) {
 				dx = x - min_x;
 			}
+			// Checks if t=0 to know whether to set up initial conditions
 			if (t == 0) {
 				solution = set1_initial(x);
 				solution2 = set2_initial(x);
 			}
+			// Otherwise calculate numerical solutions
 			else {
 				solution = Eupwind1(x, dx, dt, t);
 				solution2 = Eupwind2(x, dx, dt, t);
 			}
-
+			// Calculate truncation error for both sets
 			error1 = solution - analytical_solution1;
 			error2 = solution2 - analytical_solution2;
-
-			if (fabs(t - 5) < 1e-6 || fabs(t - 10) < 1e-6) {
+			// Prepares solutions at t=5 and t=10 for output
+			if (fabs(t - 5) < 1e-6 || fabs(t - 10) < 1e-6) { // t==5 would not work due to round off error in computer
+				// Place all values into vectors ready for output for post processing
 				veupwind1.push_back(solution);
 				veupwind2.push_back(solution2);
 				vanalytical1.push_back(analytical_solution1);
@@ -152,8 +161,8 @@ int main() {
 			}
 		}
 	}
-	// Output values to .csv
-	ofstream file("eupwind.csv");
+	// Output values to .csv .dat .txt or any filetype of choice
+	ofstream file("eupwind.dat");
 	// Headers
 	file << "Time step, X values, Set 1 Solution, Set 1 Analytical, Set 1 Error, Set 2 Solution, Set 2 Analytical, Set 2 Error\n";
 	// Write data to file
@@ -223,12 +232,6 @@ int main() {
 
 	}
 	std::cout << "***********************" << endl << "Implicit Solution Set 2" << endl << "***********************" << endl;
-	// Clearing vectors for set 2
-	/*f.clear();
-	fn.clear();
-	sub_diag.clear();
-	main_diag.clear();
-	sup_diag.clear();*/
 	
 	// *********************
 	// Set 2 implicit upwind
@@ -264,11 +267,11 @@ int main() {
 				verror2.at(i) = error2;
 			}
 		}
-
+		// Update solution
 		f = fn;
 	}
-	// Output values to .csv
-	ofstream file1("iupwind.csv");
+	// Output values to file
+	ofstream file1("iupwind.dat");
 	// Headers
 	file1 << "Time step, X values, Set 1 Solution, Set 1 Analytical, Set 1 Error, Set 2 Solution, Set 2 Analytical, Set 2 Error\n";
 	// Write data to file
@@ -301,7 +304,7 @@ int main() {
 		for (int i = 1; i < N - 1; i++) {
 			LaxWendroff_set1_new[i] = LaxWendroff_set1[i] - 0.5 * courant * (LaxWendroff_set1[i + 1] - LaxWendroff_set1[i - 1])
 				+ 0.5 * courant * courant * (LaxWendroff_set1[i + 1] - 2 * LaxWendroff_set1[i] + LaxWendroff_set1[i - 1]);
-
+			// Placing solution values and errors into vectors
 			if (fabs(t - 5) < 1e-6 || fabs(t - 10) < 1e-6) {
 				for (int i = 0; i < N; i++) {
 					error1 = LaxWendroff_set1_new[i] - vanalytical1[i];
@@ -317,7 +320,6 @@ int main() {
 
 		//Upadte the solution
 		LaxWendroff_set1 = LaxWendroff_set1_new;
-		// Calculation of errors and setting up vectors for output set 1
 
 	}
 
@@ -361,8 +363,8 @@ int main() {
 	}
 
 
-	// Output values to .csv
-	ofstream file2("lax.csv");
+	// Output values to file
+	ofstream file2("lax.dat");
 	// Headers
 	file2 << "Time step, X values, Set 1 Solution, Set 1 Analytical, Set 1 Error, Set 2 Solution, Set 2 Analytical, Set 2 Error\n";
 	// Write data to file
@@ -411,7 +413,7 @@ int main() {
 				vrerror1.push_back(error1);
 			}
 		}
-
+		// Update solution
 		r = r_new;
 		
 	}
@@ -438,7 +440,7 @@ int main() {
 			r_new[i] = r[i] - courant * (r_half[i] - r_half[i - 1]);
 		}
 
-		// Vectors for output
+		// Push values to vectors for output
 		if (fabs(t - 5) < 1e-6 || fabs(t - 10) < 1e-6) {
 			for (int i = 0; i < N; i++) {
 				vricht2.push_back(r_new[i]);
@@ -448,7 +450,7 @@ int main() {
 		}
 	}
 	// Output values to .csv
-	ofstream file3("richt.csv");
+	ofstream file3("richt.dat");
 	// Headers
 	file3 << "Time step, X values, Set 1 Solution, Set 1 Analytical, Set 1 Error, Set 2 Solution, Set 2 Analytical, Set 2 Error\n";
 
