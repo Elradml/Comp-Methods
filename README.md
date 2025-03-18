@@ -1,2 +1,11 @@
 # Comp Methods Solution
-A program solving the linear advection equation with four different schemes and two different sets of initial and boundary conditions. Also compared to two different analytical solutions to calculate the truncation error.
+
+The code was made for an assignment investigating different numerical scehemes for solving the linear advection equation which is a PDE
+The problem is setup to assume a disturbance in a tube a t = 0 along a length L = 100m
+2 sets of boundary & initial conditions were used each having their own analytical solution
+
+The four numerical method investigated were:
+1) Explicit Upwind FTBS
+2) Implicit Upwind FTBS
+3) Lax-Wendroff
+4) Ritchmyer multi-step
